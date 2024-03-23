@@ -9,8 +9,6 @@ const _render = (el, container) => {
     if (key !== "children") dom[key] = el.props[key];
   });
 
-  console.log(el);
-
   el.props.children?.forEach((child) => {
     _render(child, dom);
   });
@@ -21,7 +19,6 @@ const _render = (el, container) => {
 const createRoot = (container) => {
   return {
     render(el) {
-      console.log(el);
       return _render(el, container);
     },
   };
