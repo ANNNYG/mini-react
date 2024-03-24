@@ -11,6 +11,7 @@ const createElement = (type, props, ...children) => {
     },
   };
 };
+
 const createTextNode = (text) => {
   return {
     type: TEXT_ELEMENT,
