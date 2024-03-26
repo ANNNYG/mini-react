@@ -7,6 +7,7 @@ const Counter = ({ num }) => {
 const App = () => {
   return (
     <div>
+      32132
       <Counter num={10} />
       <Counter num={20} />
     </div>

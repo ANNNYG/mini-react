@@ -34,18 +34,28 @@ const initChildren = (fiber, children) => {
   });
 };
 
-const performWorkOfUnit = (fiber) => {
-  const isFunctionComponent = typeof fiber.type === "function";
+const updateFunctionComponent = (fiber) => {
+  const children = [fiber.type(fiber.props)];
+  initChildren(fiber, children);
+};
 
-  if (!fiber.dom && !isFunctionComponent) {
+const updateHostComponent = (fiber) => {
+  if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
     updateProps(dom, fiber.props);
   }
-  const children = isFunctionComponent
-    ? [fiber.type(fiber.props)]
-    : fiber.props.children;
-  // 为孩子创建fiber节点，并建立指针关系
+  const children = fiber.props.children;
   initChildren(fiber, children);
+};
+
+const performWorkOfUnit = (fiber) => {
+  const isFunctionComponent = typeof fiber.type === "function";
+
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber);
+  } else {
+    updateHostComponent(fiber);
+  }
 
   let nextFiber = fiber;
   // 通过建立的指针关系，返回下一个要执行的fiber
