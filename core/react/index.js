@@ -6,7 +6,8 @@ const createElement = (type, props, ...children) => {
     props: {
       ...props,
       children: children.map((child) => {
-        return typeof child === "string" ? createTextNode(child) : child;
+        const isString = typeof child === "string" || typeof child === "number";
+        return isString ? createTextNode(child) : child;
       }),
     },
   };

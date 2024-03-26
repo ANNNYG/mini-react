@@ -1,12 +1,16 @@
 import React from "../core/react";
 
-const App = (
-  <div>
-    root
+const Counter = ({ num }) => {
+  return <div>Counter:{num}</div>;
+};
+
+const App = () => {
+  return (
     <div>
-      hello world
-      <div>aaa</div>
+      <Counter num={10} />
+      <Counter num={20} />
     </div>
-  </div>
-);
+  );
+};
+
 export default App;

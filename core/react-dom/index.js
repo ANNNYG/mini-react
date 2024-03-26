@@ -1,6 +1,7 @@
-import { TEXT_ELEMENT } from "../type/index";
+import { performWorkOfUnit } from "./handleFiber";
 
-let nextWorkOfUnit;
+let nextWorkOfUnit; // 下一个要处理的fiber节点
+let root; // 根节点
 
 const _render = (el, container) => {
   nextWorkOfUnit = {
@@ -9,59 +10,8 @@ const _render = (el, container) => {
       children: [el],
     },
   };
-
+  root = nextWorkOfUnit;
   requestIdleCallback(workLoop);
-};
-
-const createDom = (type) => {
-  return type === TEXT_ELEMENT
-    ? document.createTextNode("")
-    : document.createElement(type);
-};
-
-const updateProps = (dom, props) => {
-  Object.keys(props).forEach((key) => {
-    if (key !== "children") dom[key] = props[key];
-  });
-};
-
-const initChildren = (fiber) => {
-  const children = fiber.props.children;
-  let prevChild = null; // 记录上一个孩子节点
-  children?.forEach((child, index) => {
-    const newFiber = {
-      type: child.type,
-      props: child.props,
-      child: null,
-      parent: fiber,
-      sibling: null,
-      dom: null,
-    };
-
-    if (index === 0) {
-      fiber.child = newFiber;
-    } else {
-      prevChild.sibling = newFiber;
-    }
-    prevChild = newFiber;
-  });
-};
-
-const performWorkOfUnit = (fiber) => {
-  if (!fiber.dom) {
-    const dom = (fiber.dom = createDom(fiber.type));
-    fiber.parent.dom.append(dom);
-
-    updateProps(dom, fiber.props);
-  }
-
-  // 为孩子创建fiber节点，并建立指针关系
-  initChildren(fiber);
-
-  // 通过建立的指针关系，返回下一个要执行的fiber
-  if (fiber.child) return fiber.child;
-  if (fiber.sibling) return fiber.sibling;
-  return fiber.parent?.sibling;
 };
 
 const workLoop = (deadline) => {
@@ -71,7 +21,33 @@ const workLoop = (deadline) => {
     showYield = !deadline.timeRemaining() < 1;
   }
 
+  if (!nextWorkOfUnit && root) {
+    commitRoot();
+  }
+
   requestIdleCallback(workLoop);
+};
+
+// 将创建好的dom挂载在fiber节点上
+const commitRoot = () => {
+  commitWork(root.child);
+  root = null;
+};
+
+// 递归挂载dom
+const commitWork = (fiber) => {
+  if (!fiber) return;
+  let parentFiber = fiber.parent;
+
+  while (!parentFiber.dom) {
+    parentFiber = parentFiber.parent;
+  }
+
+  if (fiber.dom) {
+    parentFiber.dom.append(fiber.dom);
+  }
+  commitWork(fiber.sibling);
+  commitWork(fiber.child);
 };
 
 const createRoot = (container) => {
