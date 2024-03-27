@@ -1,4 +1,4 @@
-import { TEXT_ELEMENT } from "../type/index";
+import { TEXT_ELEMENT, UPDATE, PLACEMENT } from "../type/index";
 
 const createDom = (type) => {
   return type === TEXT_ELEMENT
@@ -6,23 +6,56 @@ const createDom = (type) => {
     : document.createElement(type);
 };
 
-const updateProps = (dom, props) => {
-  Object.keys(props).forEach((key) => {
-    if (key !== "children") dom[key] = props[key];
+const updateProps = (dom, nextProps, oldProps) => {
+  Object.keys(oldProps).forEach((key) => {
+    if (!nextProps[key] && key !== "children") dom.removeAttribute(key);
+  });
+
+  // 2、老得有，新的有，要更新
+  // 3、老得无，新的有，要新增
+  Object.keys(nextProps).forEach((key) => {
+    if (nextProps[key] === oldProps[key]) return;
+    if (key.startsWith("on")) {
+      const eventType = key.slice(2).toLocaleLowerCase();
+      dom.removeEventListener(eventType, oldProps[key]);
+      dom.addEventListener(eventType, nextProps[key]);
+    }
+    if (key !== "children") dom[key] = nextProps[key];
   });
 };
 
-const initChildren = (fiber, children) => {
+const reconcileChildren = (fiber, children) => {
+  let oldFiber = fiber.alternate?.child;
   let prevChild = null; // 记录上一个孩子节点
   children?.forEach((child, index) => {
-    const newFiber = {
-      type: child.type,
-      props: child.props,
-      child: null,
-      parent: fiber,
-      sibling: null,
-      dom: null,
-    };
+    // type一样为更新 不一样为创建
+    const isSameType = oldFiber && oldFiber.type === child.type;
+    let newFiber;
+
+    if (isSameType) {
+      newFiber = {
+        type: child.type,
+        props: child.props,
+        child: null,
+        parent: fiber,
+        sibling: null,
+        dom: oldFiber.dom,
+        effectTag: UPDATE,
+        alternate: oldFiber,
+      };
+    } else {
+      newFiber = {
+        type: child.type,
+        props: child.props,
+        child: null,
+        parent: fiber,
+        sibling: null,
+        dom: null,
+        effectTag: PLACEMENT,
+      };
+    }
+
+    if (oldFiber) oldFiber = oldFiber.sibling;
 
     if (index === 0) {
       fiber.child = newFiber;
@@ -36,16 +69,16 @@ const initChildren = (fiber, children) => {
 
 const updateFunctionComponent = (fiber) => {
   const children = [fiber.type(fiber.props)];
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 };
 
 const updateHostComponent = (fiber) => {
   if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
-    updateProps(dom, fiber.props);
+    updateProps(dom, fiber.props, []);
   }
   const children = fiber.props.children;
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 };
 
 const performWorkOfUnit = (fiber) => {
@@ -56,7 +89,6 @@ const performWorkOfUnit = (fiber) => {
   } else {
     updateHostComponent(fiber);
   }
-
   let nextFiber = fiber;
   // 通过建立的指针关系，返回下一个要执行的fiber
   if (fiber.child) return fiber.child;
@@ -67,4 +99,4 @@ const performWorkOfUnit = (fiber) => {
   }
 };
 
-export { initChildren, createDom, updateProps, performWorkOfUnit };
+export { reconcileChildren, createDom, updateProps, performWorkOfUnit };

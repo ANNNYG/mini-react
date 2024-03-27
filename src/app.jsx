@@ -1,17 +1,23 @@
-import React from "../core/react";
+import React, { update } from "../core/react";
 
+let count = 10;
 const Counter = ({ num }) => {
-  return <div>Counter:{num}</div>;
+  const handleClick = () => {
+    console.log("click");
+    count++;
+    update();
+  };
+
+  return (
+    <div>
+      Counter:{count}
+      <button onClick={handleClick}>click</button>
+    </div>
+  );
 };
 
 const App = () => {
-  return (
-    <div>
-      32132
-      <Counter num={10} />
-      <Counter num={20} />
-    </div>
-  );
+  return <Counter num={10} />;
 };
 
 export default App;

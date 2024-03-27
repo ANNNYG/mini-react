@@ -82,7 +82,7 @@ const updateFunctionComponent = (fiber) => {
   // 函数组件是不会创建对应的标签的，所以我们实际要处理的fiber是函数组件里面的html标签
   const children = [fiber.type(fiber.props)];
   // 处理孩子的fiber节点，形成链表
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 };
 
 const updateHostComponent = (fiber) => {
@@ -95,16 +95,16 @@ const updateHostComponent = (fiber) => {
   }
   // 处理孩子的fiber节点，形成链表
   const children = fiber.props.children;
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 };
 ```
 
-### initChildren
+### reconcileChildren
 
-在 initChildren 中，创建好子 fiber 节点，并与父 fiber 节点形成关系
+在 reconcileChildren 中，创建好子 fiber 节点，并与父 fiber 节点形成关系
 
 ```js
-const initChildren = (fiber, children) => {
+const reconcileChildren = (fiber, children) => {
   let prevChild = null; // 记录上一个孩子节点
   children?.forEach((child, index) => {
     const newFiber = {
