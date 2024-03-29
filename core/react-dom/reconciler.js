@@ -61,7 +61,7 @@ const reconcileChildren = (workInProgressFiber, children) => {
 
     if (currentFiber) currentFiber = currentFiber.sibling;
 
-    if (index === 0) {
+    if (index === 0 || !prevChild) {
       workInProgressFiber.child = newFiber;
     } else {
       prevChild.sibling = newFiber;

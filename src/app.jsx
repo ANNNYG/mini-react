@@ -5,9 +5,10 @@ let barCount = 0;
 
 const Foo = () => {
   console.log("foo");
+  const updater = update();
   const handleClick = () => {
     fooCount++;
-    update();
+    updater();
   };
 
   return (
@@ -21,9 +22,10 @@ const Foo = () => {
 
 const Bar = () => {
   console.log("bar");
+  const updater = update();
   const handleClick = () => {
     barCount++;
-    update();
+    updater();
   };
 
   return (
@@ -35,12 +37,22 @@ const Bar = () => {
   );
 };
 
+let show = false;
+
 const Counter = () => {
+  console.log("Count");
+  const updater = update();
+  const handleShow = () => {
+    show = !show;
+    updater();
+  };
   return (
     <div>
+      {show && <Foo />}
       App
       <Foo />
       <Bar />
+      <button onClick={handleShow}>show</button>
     </div>
   );
 };

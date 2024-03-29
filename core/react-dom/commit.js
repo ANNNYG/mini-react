@@ -1,4 +1,4 @@
-import { updateProps } from "./handleFiber";
+import { updateProps } from "./reconciler";
 import { PLACEMENT, UPDATE } from "../type";
 
 export const commitDelete = (fiber) => {

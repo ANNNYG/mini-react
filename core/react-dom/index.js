@@ -1,9 +1,8 @@
 import { commitDelete, commitWork } from "./commit";
-import { reconcileChildren, createDom, updateProps } from "./handleFiber";
+import { reconcileChildren, createDom, updateProps } from "./reconciler";
 
 let nextWorkOfUnit; // 下一个要处理的fiber节点
 let workInProgressRoot;
-let currentRoot; // current fiber节点
 let deleteFibers = []; // 删除的fiber节点
 let workInProgressFiber;
 
@@ -19,19 +18,25 @@ const _render = (el, container) => {
 };
 
 const update = () => {
-  workInProgressRoot = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot,
+  let current = workInProgressFiber;
+  return () => {
+    workInProgressRoot = {
+      ...current,
+      alternate: current,
+    };
+    nextWorkOfUnit = workInProgressRoot;
+    requestIdleCallback(workLoop);
   };
-  nextWorkOfUnit = workInProgressRoot;
-  requestIdleCallback(workLoop);
 };
 
 const workLoop = (deadline) => {
   let showYield = false;
   while (!showYield && nextWorkOfUnit) {
     nextWorkOfUnit = performWorkOfUnit(nextWorkOfUnit);
+
+    if (workInProgressRoot?.sibling?.type === nextWorkOfUnit?.type) {
+      nextWorkOfUnit = undefined;
+    }
     showYield = !deadline.timeRemaining() < 1;
   }
 
@@ -79,7 +84,6 @@ const performWorkOfUnit = (fiber) => {
 const commitRoot = () => {
   deleteFibers.forEach(commitDelete);
   commitWork(workInProgressRoot.child);
-  currentRoot = workInProgressRoot;
   workInProgressRoot = null;
   deleteFibers = [];
 };
