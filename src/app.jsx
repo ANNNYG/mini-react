@@ -6,7 +6,7 @@ const Foo = () => {
 
   const handleClick = () => {
     setCount((pre) => pre + 1);
-    setBar((pre) => pre + "s");
+    setBar("aaaaa");
   };
 
   return (

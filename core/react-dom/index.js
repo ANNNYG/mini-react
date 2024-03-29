@@ -115,7 +115,11 @@ const useState = (initial) => {
   current.stateHooks = stateHooks;
 
   const setState = (action) => {
-    stateHook.state = action(stateHook.state);
+    const isFunction = typeof action === "function";
+    const newState = isFunction ? action(stateHook.state) : action;
+    if (newState === stateHook.state) return;
+
+    stateHook.state = newState;
 
     workInProgressRoot = {
       ...current,
