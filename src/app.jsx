@@ -1,58 +1,46 @@
-import React, { update } from "../core/react";
-
-let fooCount = 0;
-let barCount = 0;
+import React, { update, useState } from "../core/react";
 
 const Foo = () => {
-  console.log("foo");
-  const updater = update();
+  const [count, setCount] = useState(10);
+  const [bar, setBar] = useState("bar");
+
   const handleClick = () => {
-    fooCount++;
-    updater();
+    setCount((pre) => pre + 1);
+    setBar((pre) => pre + "s");
   };
 
   return (
     <div>
       <h1>foo</h1>
-      {fooCount}
+      {count}
+      {bar}
       <button onClick={handleClick}>update foo</button>
     </div>
   );
 };
 
-const Bar = () => {
-  console.log("bar");
-  const updater = update();
-  const handleClick = () => {
-    barCount++;
-    updater();
-  };
+// const Bar = () => {
+//   console.log("bar");
+//   const updater = update();
+//   const handleClick = () => {
+//     barCount++;
+//     updater();
+//   };
 
-  return (
-    <div>
-      <h1>bar</h1>
-      {barCount}
-      <button onClick={handleClick}>update bar</button>
-    </div>
-  );
-};
-
-let show = false;
+//   return (
+//     <div>
+//       <h1>bar</h1>
+//       {barCount}
+//       <button onClick={handleClick}>update bar</button>
+//     </div>
+//   );
+// };
 
 const Counter = () => {
-  console.log("Count");
-  const updater = update();
-  const handleShow = () => {
-    show = !show;
-    updater();
-  };
   return (
     <div>
-      {show && <Foo />}
       App
       <Foo />
-      <Bar />
-      <button onClick={handleShow}>show</button>
     </div>
   );
 };

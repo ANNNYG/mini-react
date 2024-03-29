@@ -5,6 +5,8 @@ let nextWorkOfUnit; // 下一个要处理的fiber节点
 let workInProgressRoot;
 let deleteFibers = []; // 删除的fiber节点
 let workInProgressFiber;
+let stateHooks;
+let stateHookIndex;
 
 const _render = (el, container) => {
   workInProgressRoot = {
@@ -25,7 +27,6 @@ const update = () => {
       alternate: current,
     };
     nextWorkOfUnit = workInProgressRoot;
-    requestIdleCallback(workLoop);
   };
 };
 
@@ -48,6 +49,8 @@ const workLoop = (deadline) => {
 };
 
 const updateFunctionComponent = (fiber) => {
+  stateHooks = [];
+  stateHookIndex = 0;
   workInProgressFiber = fiber;
   const children = [fiber.type(fiber.props)];
   reconcileChildren(fiber, children);
@@ -100,5 +103,30 @@ const createRoot = (container) => {
   };
 };
 
-export { update, deleteFiber };
+const useState = (initial) => {
+  let current = workInProgressFiber;
+  const oldStateHook = current.alternate?.stateHooks[stateHookIndex];
+  const stateHook = {
+    state: oldStateHook ? oldStateHook.state : initial,
+  };
+  stateHookIndex++;
+  stateHooks.push(stateHook);
+
+  current.stateHooks = stateHooks;
+
+  const setState = (action) => {
+    stateHook.state = action(stateHook.state);
+
+    workInProgressRoot = {
+      ...current,
+      alternate: current,
+    };
+
+    nextWorkOfUnit = workInProgressRoot;
+  };
+
+  return [stateHook.state, setState];
+};
+
+export { update, deleteFiber, useState };
 export default { createRoot, update };

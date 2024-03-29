@@ -1,5 +1,5 @@
 import { TEXT_ELEMENT } from "../type/index";
-import { update } from "../react-dom";
+import { update, useState } from "../react-dom";
 
 const createElement = (type, props, ...children) => {
   return {
@@ -23,6 +23,6 @@ const createTextNode = (text) => {
   };
 };
 
-export { createElement, createTextNode, update };
+export { createElement, createTextNode, update, useState };
 
 export default { createElement, createTextNode };
